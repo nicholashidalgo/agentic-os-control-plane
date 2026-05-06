@@ -12,8 +12,16 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
 from control_plane.audit_log import log_run
+from control_plane.config import get_config
 from control_plane.policy import ActionType, PolicyDecision, check_action
 from control_plane.registry import get_skill, list_skills
+
+
+def _allowed_prefixes() -> tuple[str, ...]:
+    cfg = get_config()
+    vault = cfg.get("vault_path", "vault").rstrip("/") + "/"
+    data = cfg.get("data_path", "data").rstrip("/") + "/"
+    return (vault, data)
 
 
 def _resolve_output_path(raw: str) -> Path | None:
@@ -34,7 +42,7 @@ def _resolve_output_path(raw: str) -> Path | None:
 
     rel = resolved.relative_to(_REPO_ROOT)
     rel_str = str(rel)
-    if rel_str.startswith("vault/") or rel_str.startswith("data/"):
+    if any(rel_str.startswith(prefix) for prefix in _allowed_prefixes()):
         return resolved
     return None
 

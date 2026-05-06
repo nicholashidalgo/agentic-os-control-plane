@@ -8,8 +8,22 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_RUNS_LOG = _REPO_ROOT / "data" / "runs.jsonl"
-_APPROVALS_LOG = _REPO_ROOT / "data" / "approvals.jsonl"
+
+
+def _data_path() -> Path:
+    try:
+        from control_plane.config import get_config
+        return _REPO_ROOT / get_config().get("data_path", "data")
+    except Exception:
+        return _REPO_ROOT / "data"
+
+
+def _runs_log() -> Path:
+    return _data_path() / "runs.jsonl"
+
+
+def _approvals_log() -> Path:
+    return _data_path() / "approvals.jsonl"
 
 
 def _run_id() -> str:
@@ -44,7 +58,7 @@ def log_run(
     }
     if error:
         record["error"] = error
-    _append(_RUNS_LOG, record)
+    _append(_runs_log(), record)
     return run_id
 
 
@@ -64,4 +78,4 @@ def log_approval_request(
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "outcome": "pending",
     }
-    _append(_APPROVALS_LOG, record)
+    _append(_approvals_log(), record)

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AgenticOS — Architecture Final</title>
+<style>
+  /* ── Design tokens from File A ── */
+  :root {
+    --board:   #10251f;
+    --board-2: #17352d;
+    --chalk:   #f4f1dc;
+    --muted:   #c9d6c8;
+    --yellow:  #f6d86a;
+    --red:     #f06f64;
+    --blue:    #7fc8ff;
+    --green:   #8ee6a7;
+    --purple:  #c9a7ff;
+    --orange:  #ffbf7a;
+    --teal:    #3dd6b0;
+    --salmon:  #e17055;
+    --line:    rgba(244,241,220,.72);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,.08), transparent 25%),
+      linear-gradient(135deg, #080c0b, #17211d 55%, #0a0d0c);
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    color: var(--chalk);
+  }
+
+  /* ── Outer wood-grain frame — File A exact ── */
+  .frame {
+    width: min(1280px, 97vw);
+    aspect-ratio: 16 / 9;
+    padding: 22px;
+    background:
+      linear-gradient(90deg, #8a5a33, #c08a53 16%, #75471f 32%, #d2a66a 48%, #73451f 70%, #b77b42);
+    border-radius: 18px;
+    box-shadow:
+      0 30px 80px rgba(0,0,0,.55),
+      inset 0 0 0 6px rgba(65,36,16,.45);
+  }
+
+  /* ── Chalkboard surface — File A exact ── */
+  .board {
+    position: relative;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 70% 18%, rgba(255,255,255,.06), transparent 22%),
+      radial-gradient(circle at 18% 78%, rgba(255,255,255,.05), transparent 20%),
+      linear-gradient(145deg, var(--board), var(--board-2));
+    border: 4px solid rgba(20,40,34,.9);
+    box-shadow: inset 0 0 40px rgba(0,0,0,.45);
+  }
+
+  /* Grid texture — File A exact */
+  .board::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 38px 38px;
+    opacity: .45;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  /* Chalk dust — File A exact */
+  .dust {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 15% 28%, rgba(255,255,255,.14) 0 1px, transparent 2px),
+      radial-gradient(circle at 48% 64%, rgba(255,255,255,.12) 0 1px, transparent 2px),
+      radial-gradient(circle at 76% 38%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+      radial-gradient(circle at 88% 75%, rgba(255,255,255,.14) 0 1px, transparent 2px);
+    opacity: .55;
+    animation: dust 8s ease-in-out infinite alternate;
+  }
+  @keyframes dust {
+    from { transform: translateY(0);    opacity: .4; }
+    to   { transform: translateY(-6px); opacity: .68; }
+  }
+
+  /* ── Title — File A typography ── */
+  .title {
+    position: absolute;
+    top: 24px;
+    left: 32px;
+    right: 32px;
+    text-align: center;
+    font-size: clamp(22px, 3.2vw, 40px);
+    font-weight: 900;
+    letter-spacing: .6px;
+    text-shadow: 0 0 2px rgba(255,255,255,.45);
+  }
+  .title .accent { color: var(--red); }
+
+  .subtitle {
+    position: absolute;
+    top: 76px;
+    left: 32px;
+    right: 32px;
+    text-align: center;
+    font-size: clamp(11px, 1.3vw, 16px);
+    color: var(--muted);
+  }
+
+  /* ── Node system container ──
+     Board inner at 16:9 with 22px frame padding:
+     Approx board height = 676px.
+     Legend: ~58px at bottom:0. Marquee: 26px at bottom:58px.
+     Available: 676 - 85(top) - 84(strips) = 507px.                 */
+  .system {
+    position: absolute;
+    left: 50%;
+    top: 100px;
+    width: 1100px;
+    height: 490px;
+    transform: translateX(-50%);
+  }
+
+  /* ── Nodes — File A exact style ── */
+  .node {
+    position: absolute;
+    min-width: 154px;
+    padding: 10px 14px;
+    border: 2.5px solid currentColor;
+    border-radius: 18px;
+    background: rgba(255,255,255,.035);
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,.035),
+      0 8px 20px rgba(0,0,0,.2);
+    filter: drop-shadow(0 0 1px rgba(255,255,255,.35));
+    animation: writeIn 1.2s both;
+  }
+
+  .node .label {
+    display: block;
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.1;
+    white-space: nowrap;         /* prevents mid-word break on any label */
+  }
+
+  .node .desc {
+    display: block;
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.3;
+    overflow: hidden;
+  }
+
+  @keyframes writeIn {
+    from { opacity: 0; clip-path: inset(0 100% 0 0); }
+    to   { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+
+  /* ── 10 node positions — organic layout, 1.8s sequential delays ──
+
+     System: 1100×490. Approx node heights at 10px padding + text:
+       1-line desc: ~52px.  2-line desc: ~64px.  3-line desc: ~76px.
+
+     Row Y anchors (top of node):
+       R1  User Intent:         top=0    (h≈52, bottom≈52)
+       R2  Orchestrator:        top=82   (h≈64, bottom≈146)
+       R3  RAG/LLM/SkillReg:   top=172  (h≈76, bottom≈248)
+       R4  Agents:              top=272  (h≈64, bottom≈336)
+       R5  Policy / Audit:      top=358  (h≈64, bottom≈422)
+       R6  Vault / Continuation:top=430  (h≈64, bottom≈494)  ← within 490
+  */
+
+  /* R1 — User Intent, centred */
+  .n-user {
+    left: 50%; transform: translateX(-50%);
+    top: 0;
+    min-width: 210px;
+    color: var(--chalk);
+    animation-delay: .2s;
+  }
+
+  /* R2 — Orchestrator, centred, wide */
+  .n-orch {
+    left: 50%; transform: translateX(-50%);
+    top: 82px;
+    min-width: 310px;
+    color: var(--purple);
+    animation-delay: 2.0s;
+  }
+
+  /* R3 left — RAG Knowledge */
+  .n-rag {
+    left: 18px;
+    top: 172px;
+    min-width: 175px;
+    color: var(--yellow);
+    animation-delay: 3.8s;
+  }
+
+  /* R3 centre — LLM Brain */
+  .n-llm {
+    left: 50%; transform: translateX(-50%);
+    top: 172px;
+    min-width: 235px;
+    color: var(--blue);
+    animation-delay: 5.6s;
+  }
+
+  /* R3 right — Skill Registry */
+  .n-skillreg {
+    right: 18px;
+    top: 172px;
+    min-width: 205px;
+    color: var(--green);
+    animation-delay: 7.4s;
+  }
+
+  /* R4 — Agents = Hands, centred */
+  .n-agents {
+    left: 50%; transform: translateX(-50%);
+    top: 272px;
+    min-width: 255px;
+    color: var(--teal);
+    animation-delay: 9.2s;
+  }
+
+  /* R5 left — Policy Engine */
+  .n-policy {
+    left: 165px;
+    top: 358px;
+    min-width: 215px;
+    color: var(--red);
+    animation-delay: 11.0s;
+    /* pulse starts after writeIn settles */
+    animation: writeIn 1.2s 11.0s both, policyPulse 2s 12.8s ease-in-out infinite;
+  }
+  @keyframes policyPulse {
+    0%,100% { box-shadow: 0 0 4px var(--red),  0 0 0 2px rgba(255,255,255,.035); }
+    50%      { box-shadow: 0 0 18px var(--red), 0 0 32px rgba(240,111,100,.45), 0 0 0 2px rgba(255,255,255,.05); }
+  }
+
+  /* R5 right — Audit Trail */
+  .n-audit {
+    right: 165px;
+    top: 358px;
+    min-width: 235px;
+    color: var(--salmon);
+    animation-delay: 12.8s;
+  }
+
+  /* R6 left — Memory Vault */
+  .n-vault {
+    left: 100px;
+    top: 430px;
+    min-width: 235px;
+    color: var(--teal);
+    animation-delay: 14.6s;
+  }
+
+  /* R6 right — Continuation Brief */
+  .n-continuation {
+    right: 100px;
+    top: 430px;
+    min-width: 215px;
+    color: var(--green);
+    animation-delay: 16.4s;
+  }
+
+  /* ── LLM shimmer — thinking effect ── */
+  .n-llm::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: linear-gradient(110deg,
+      transparent 25%, rgba(127,200,255,.10) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: shimmer 3.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── SVG arrow layer ── */
+  svg.arrows {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* File A flow style */
+  .flow {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 10 10;
+    animation: dash 1.4s linear infinite, fadeIn 1s both;
+  }
+  .flow.primary {
+    stroke-width: 4;
+    stroke-dasharray: 13 10;
+  }
+  .flow.branch {
+    stroke-width: 2.5;
+    stroke-dasharray: 8 9;
+  }
+  .flow.feedback {
+    stroke: rgba(142,230,167,.75);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 9;
+  }
+  @keyframes dash {
+    to { stroke-dashoffset: -40; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Arrow animation delays — appear just after source node is visible.
+     Node appears at delay + 1.2s (writeIn duration).
+     fa = "flow after" — fires 0.3s after source node finishes.
+       fa1  after user     (0.2+1.2+0.3 = 1.7s)
+       fa2  after orch     (2.0+1.2+0.3 = 3.5s)
+       fa3  after llm→rag  (5.6+1.2+0.3 = 7.1s)
+       fa4  after llm→reg  (5.6+1.2+0.3 = 7.1s)
+       fa5  after rag→agents (3.8+1.2+0.3 = 5.3s ... but rag visible 3.8s, agents waits until both)
+           Use max(rag, skillreg) + 1.5 = max(3.8,7.4)+1.5 = 8.9s
+       fa6  after agents (9.2+1.2+0.3 = 10.7s)
+       fa7  after agents→audit (same = 10.7s)
+       fa8  policy→vault (11.0+1.2+0.3 = 12.5s)
+       fa9  audit→continuation (12.8+1.2+0.3 = 14.3s)
+       fa10 vault→orch feedback (14.6+1.2+0.3 = 16.1s)
+       fa11 continuation→orch feedback (16.4+1.2+0.3 = 17.9s)
+  */
+  .fa1  { animation-delay: 1.7s,  1.7s;  }
+  .fa2  { animation-delay: 3.5s,  3.5s;  }
+  .fa3  { animation-delay: 7.1s,  7.1s;  }
+  .fa4  { animation-delay: 7.1s,  7.1s;  }
+  .fa5  { animation-delay: 8.9s,  8.9s;  }
+  .fa6  { animation-delay: 10.7s, 10.7s; }
+  .fa7  { animation-delay: 10.7s, 10.7s; }
+  .fa8  { animation-delay: 12.5s, 12.5s; }
+  .fa9  { animation-delay: 14.3s, 14.3s; }
+  .fa10 { animation-delay: 16.1s, 16.1s; }
+  .fa11 { animation-delay: 17.9s, 17.9s; }
+
+  /* ── Travelling packet dots ── */
+  .packet {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    animation: packetPath 28s ease-in-out infinite;
+  }
+  .p1 { background: var(--yellow); box-shadow: 0 0 12px var(--yellow); animation-delay: 18.5s; }
+  .p2 { background: var(--blue);   box-shadow: 0 0 12px var(--blue);   animation-delay: 21.0s; }
+  .p3 { background: var(--green);  box-shadow: 0 0 12px var(--green);  animation-delay: 23.5s; }
+
+  /* Spine path: user(550,26)→orch(550,114)→llm(550,230)→agents(550,336)→policy(275,430)→vault(220,492) */
+  @keyframes packetPath {
+    0%   { opacity:0; transform:translate(546px, 22px);  }
+    4%   { opacity:1; transform:translate(546px, 112px); }
+    14%  { transform:translate(546px, 226px); }
+    24%  { transform:translate(546px, 332px); }
+    36%  { transform:translate(272px, 426px); }
+    48%  { transform:translate(216px, 488px); }
+    60%  { transform:translate(872px, 488px); }
+    72%  { opacity:1; transform:translate(868px, 426px); }
+    84%  { opacity:0; transform:translate(868px, 426px); }
+    100% { opacity:0; transform:translate(546px, 22px);  }
+  }
+
+  /* ── Scrolling marquee — clean separation from legend ── */
+  .marquee-wrap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 60px;       /* legend is 56px tall; 4px gap */
+    height: 28px;
+    overflow: hidden;
+    background: rgba(0,0,0,.18);
+    border-top:    1px solid rgba(244,241,220,.2);
+    border-bottom: 1px solid rgba(244,241,220,.2);
+  }
+  .marquee-inner {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    white-space: nowrap;
+    animation: marqueeScroll 48s linear infinite;   /* half speed = 48s */
+  }
+  .marquee-inner span {
+    font-size: 11px;
+    color: var(--muted);
+    padding-right: 100px;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  }
+  .marquee-inner em { color: var(--yellow); font-style: normal; }
+  @keyframes marqueeScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── Legend strip — File A exact layout ── */
+  .legend {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 56px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    padding: 0 28px;
+    border-top: 2px solid rgba(244,241,220,.3);
+    background: rgba(0,0,0,.18);
+    align-items: center;
+  }
+  .legend-col {
+    text-align: center;
+    border-right: 1px solid rgba(244,241,220,.15);
+    padding: 0 6px;
+  }
+  .legend-col:last-child { border-right: none; }
+  .legend-col b {
+    display: block;
+    font-size: 13px;
+    color: var(--chalk);
+    white-space: nowrap;
+  }
+  .legend-col span {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<main class="frame">
+  <section class="board">
+    <div class="dust"></div>
+
+    <!-- ── Title — File A typography ── -->
+    <div class="title"><span class="accent">AgenticOS</span>: How It Actually Runs</div>
+    <div class="subtitle">A governed execution layer.&ensp;Real components.&ensp;Real policy.&ensp;Real audit trail.</div>
+
+    <!-- ══════════════════════════════════════════════════════
+         SYSTEM — 1100×490, centred, top:100px within board
+
+         Node centre coordinates for SVG paths (cx, cy):
+           user:         cx=550, top=0,   h≈52  → cy=26,  bot=52
+           orch:         cx=550, top=82,  h≈64  → cy=114, bot=146
+           rag:          left=18,w=175,cx=105,  top=172, h≈76 → cy=210, bot=248
+           llm:          cx=550, top=172, h≈76  → cy=210, bot=248
+           skillreg:     right=18,w=205,cx=989, top=172, h≈76 → cy=210, bot=248
+           agents:       cx=550, top=272, h≈64  → cy=304, bot=336
+           policy:       left=165,w=215,cx=272, top=358, h≈64 → cy=390, bot=422
+           audit:        right=165,w=235,cx=832,top=358, h≈64 → cy=390, bot=422
+           vault:        left=100,w=235,cx=217, top=430, h≈52 → cy=456
+           continuation: right=100,w=215,cx=885,top=430, h≈52 → cy=456
+    ══════════════════════════════════════════════════════ -->
+    <div class="system">
+
+      <!-- SVG arrows behind nodes -->
+      <svg class="arrows" viewBox="0 0 1100 490" aria-hidden="true">
+        <defs>
+          <!-- Arrowhead markers in matching colors -->
+          <marker id="arr"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(244,241,220,.85)"/>
+          </marker>
+          <marker id="arrY" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(246,216,106,.95)"/>
+          </marker>
+          <marker id="arrP" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(201,167,255,.95)"/>
+          </marker>
+          <marker id="arrB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(127,200,255,.95)"/>
+          </marker>
+          <marker id="arrG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(142,230,167,.95)"/>
+          </marker>
+          <marker id="arrT" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(61,214,176,.95)"/>
+          </marker>
+          <marker id="arrR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(240,111,100,.95)"/>
+          </marker>
+          <marker id="arrS" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(225,112,85,.95)"/>
+          </marker>
+        </defs>
+
+        <!--
+          ARROW 1: User Intent → Orchestrator  (yellow primary)
+          from cy=52 to top of orch at y=82
+        -->
+        <path class="flow primary fa1"
+              stroke="rgba(246,216,106,.88)"
+              marker-end="url(#arrY)"
+              d="M 550,52 C 550,63 550,70 550,80"/>
+
+        <!--
+          ARROW 2: Orchestrator → LLM Brain  (yellow primary, straight)
+          from bot of orch y=146 to top of llm y=172
+        -->
+        <path class="flow primary fa2"
+              stroke="rgba(246,216,106,.88)"
+              marker-end="url(#arrY)"
+              d="M 550,146 C 550,156 550,163 550,170"/>
+
+        <!--
+          ARROW 3: LLM Brain → RAG Knowledge  (blue to yellow, left curve)
+          from llm left edge: x=550-117=433, cy=210
+          to rag right edge:  x=18+175=193, cy=210
+        -->
+        <path class="flow branch fa3"
+              stroke="rgba(246,216,106,.72)"
+              marker-end="url(#arrY)"
+              d="M 433,210 C 370,210 265,210 196,210"/>
+
+        <!--
+          ARROW 4: LLM Brain → Skill Registry  (blue to green, right curve)
+          from llm right edge: x=550+117=667, cy=210
+          to skillreg left edge: x=1100-18-205=877, cy=210
+        -->
+        <path class="flow branch fa4"
+              stroke="rgba(142,230,167,.72)"
+              marker-end="url(#arrG)"
+              d="M 667,210 C 730,210 840,210 874,210"/>
+
+        <!--
+          ARROW 5: Skill Registry → Agents = Hands  (green, right→centre curve)
+          from skillreg bottom: cx=989, y=248
+          to agents right edge: x=550+127=677, cy=304
+        -->
+        <path class="flow branch fa5"
+              stroke="rgba(142,230,167,.72)"
+              marker-end="url(#arrG)"
+              d="M 989,248 C 989,280 750,296 680,302"/>
+
+        <!--
+          ARROW 5b: RAG Knowledge → Agents = Hands  (yellow, left→centre curve)
+          from rag bottom: cx=105, y=248
+          to agents left edge: x=550-127=423, cy=304
+        -->
+        <path class="flow branch fa5"
+              stroke="rgba(246,216,106,.6)"
+              marker-end="url(#arr)"
+              d="M 105,248 C 105,280 350,296 420,302"/>
+
+        <!--
+          ARROW 6: Agents → Policy Engine  (teal→red, left branch)
+          from agents bot-left area: x=480, y=336
+          to policy top: cx=272, y=358
+        -->
+        <path class="flow branch fa6"
+              stroke="rgba(240,111,100,.75)"
+              marker-end="url(#arrR)"
+              d="M 480,336 C 430,348 340,350 275,356"/>
+
+        <!--
+          ARROW 7: Agents → Audit Trail  (teal→salmon, right branch)
+          from agents bot-right area: x=620, y=336
+          to audit top: cx=832, y=358
+        -->
+        <path class="flow branch fa7"
+              stroke="rgba(225,112,85,.75)"
+              marker-end="url(#arrS)"
+              d="M 620,336 C 670,348 760,350 829,356"/>
+
+        <!--
+          Branch labels
+        -->
+        <text x="350" y="347" font-size="9" fill="rgba(142,230,167,.9)"
+              font-family="'Trebuchet MS','Segoe UI',sans-serif">ALLOW</text>
+        <text x="630" y="347" font-size="9" fill="rgba(225,112,85,.9)"
+              font-family="'Trebuchet MS','Segoe UI',sans-serif">REQUIRE_APPROVAL</text>
+
+        <!--
+          ARROW 8: Policy Engine → Memory Vault  (red→teal)
+          from policy bot: cx=272, y=422
+          to vault top: cx=217, y=430
+        -->
+        <path class="flow branch fa8"
+              stroke="rgba(61,214,176,.75)"
+              marker-end="url(#arrT)"
+              d="M 260,422 C 248,428 232,430 220,430"/>
+
+        <!--
+          ARROW 9: Audit Trail → Continuation Brief  (salmon→green)
+          from audit bot: cx=832, y=422
+          to continuation top: cx=885, y=430
+        -->
+        <path class="flow branch fa9"
+              stroke="rgba(142,230,167,.75)"
+              marker-end="url(#arrG)"
+              d="M 844,422 C 856,428 870,430 882,430"/>
+
+        <!--
+          ARROW 10: Memory Vault → Orchestrator  (feedback, left side)
+          from vault left: x=100, cy=456
+          up left wall to orchestrator left edge
+        -->
+        <path class="flow feedback fa10"
+              marker-end="url(#arr)"
+              d="M 100,456 C 40,456 18,390 18,300 C 18,200 40,135 390,114"/>
+
+        <!--
+          ARROW 11: Continuation Brief → Orchestrator  (feedback, right side)
+          from continuation right: x=1100-100=1000, cy=456
+          up right wall to orchestrator right edge
+        -->
+        <path class="flow feedback fa11"
+              marker-end="url(#arr)"
+              d="M 1000,456 C 1060,456 1082,390 1082,300 C 1082,200 1060,135 710,114"/>
+      </svg>
+
+      <!-- Travelling packet dots -->
+      <div class="packet p1"></div>
+      <div class="packet p2"></div>
+      <div class="packet p3"></div>
+
+      <!-- ── 10 Nodes ── -->
+
+      <!-- 1. User Intent -->
+      <div class="node n-user">
+        <span class="label">User Intent</span>
+        <span class="desc">Goal · Constraint · Task · Decision</span>
+      </div>
+
+      <!-- 2. Orchestrator / Agent Loop -->
+      <div class="node n-orch">
+        <span class="label">Orchestrator / Agent Loop</span>
+        <span class="desc">Plan → Act → Observe → Reflect → Repeat<br>Claude Code · OpenAI Codex</span>
+      </div>
+
+      <!-- 3. RAG Knowledge -->
+      <div class="node n-rag">
+        <span class="label">RAG Knowledge</span>
+        <span class="desc">vault/wiki/ · vault/raw/<br>retrieves context before action</span>
+      </div>
+
+      <!-- 4. LLM Brain -->
+      <div class="node n-llm">
+        <span class="label">LLM Brain</span>
+        <span class="desc">Claude · Codex · Gemma · Ollama<br>reasoning · planning · tool selection</span>
+      </div>
+
+      <!-- 5. Skill Registry -->
+      <div class="node n-skillreg">
+        <span class="label">Skill Registry</span>
+        <span class="desc">morning_brief · vault_cleanup<br>research_digest · continuation_brief<br>policy_simulator</span>
+      </div>
+
+      <!-- 6. Agents = Hands -->
+      <div class="node n-agents">
+        <span class="label">Agents = Hands</span>
+        <span class="desc">run_skill.py · deterministic outputs<br>path traversal blocked</span>
+      </div>
+
+      <!-- 7. Policy Engine -->
+      <div class="node n-policy">
+        <span class="label">Policy Engine</span>
+        <span class="desc">ALLOW · REQUIRE_APPROVAL · DENY<br>policy.py · every skill execution</span>
+      </div>
+
+      <!-- 8. Audit Trail -->
+      <div class="node n-audit">
+        <span class="label">Audit Trail</span>
+        <span class="desc">data/runs.jsonl · approvals.jsonl<br>RUN-YYYYMMDD-HHMMSS · inputs_hash</span>
+      </div>
+
+      <!-- 9. Memory Vault -->
+      <div class="node n-vault">
+        <span class="label">Memory Vault</span>
+        <span class="desc">vault/raw/ → vault/wiki/ → vault/projects/<br>durable operating memory</span>
+      </div>
+
+      <!-- 10. Continuation Brief -->
+      <div class="node n-continuation">
+        <span class="label">Continuation Brief</span>
+        <span class="desc">vault/daily/ · session handoff<br>context preservation across sessions</span>
+      </div>
+
+    </div><!-- /system -->
+
+    <!-- ── Scrolling marquee — above legend, no overlap ── -->
+    <div class="marquee-wrap" aria-hidden="true">
+      <div class="marquee-inner">
+        <!-- duplicated for seamless infinite scroll -->
+        <span><em>LLM thinks</em> → <em>RAG knows</em> → <em>Skills execute</em> → <em>Policy gates</em> → <em>Vault remembers</em> → <em>Audit proves</em>&ensp;·&ensp;run_skill.py orchestrates every action&ensp;·&ensp;policy.py gates every write&ensp;·&ensp;vault/daily/ preserves every session&ensp;·&ensp;data/runs.jsonl proves every run&ensp;·&ensp;</span>
+        <span><em>LLM thinks</em> → <em>RAG knows</em> → <em>Skills execute</em> → <em>Policy gates</em> → <em>Vault remembers</em> → <em>Audit proves</em>&ensp;·&ensp;run_skill.py orchestrates every action&ensp;·&ensp;policy.py gates every write&ensp;·&ensp;vault/daily/ preserves every session&ensp;·&ensp;data/runs.jsonl proves every run&ensp;·&ensp;</span>
+      </div>
+    </div>
+
+    <!-- ── Legend strip — File A layout, File B content ── -->
+    <div class="legend">
+      <div class="legend-col"><b>Brain</b><span>Claude Code / Codex</span></div>
+      <div class="legend-col"><b>Knowledge</b><span>vault/wiki/</span></div>
+      <div class="legend-col"><b>Skills</b><span>5 registered skills</span></div>
+      <div class="legend-col"><b>Policy</b><span>policy.py</span></div>
+      <div class="legend-col"><b>Memory</b><span>Markdown vault</span></div>
+      <div class="legend-col"><b>Control</b><span>runs.jsonl</span></div>
+    </div>
+
+  </section>
+</main>
+
+</body>
+</html>

@@ -51,6 +51,64 @@ flowchart TD
 
 ---
 
+## Getting Started
+
+See [docs/getting-started.md](docs/getting-started.md) for the full walkthrough. Three commands get you running:
+
+```bash
+git clone https://github.com/nicholashidalgo/agentic-os-control-plane
+cd agentic-os-control-plane
+chmod +x install.sh && ./install.sh
+```
+
+`install.sh` creates the required vault and data directories, copies `config.example.yaml` to `config.yaml` on first run, and installs Python dependencies. It is safe to rerun.
+
+---
+
+## Configuration
+
+Copy `config.example.yaml` to `config.yaml` (done automatically by `install.sh`) and edit as needed:
+
+```yaml
+vault_path: vault                              # where the memory vault lives
+data_path: data                                # where audit logs are written
+logs_path: logs                                # where runtime logs go
+default_output_folder: vault/projects          # default skill output location
+require_approval_for_destructive_actions: true # gate FILE_DELETE, GIT_COMMIT, etc.
+allow_demo_skills: true                        # enable the bundled demo skills
+```
+
+All paths are relative to the repo root. `control_plane/config.py` loads `config.yaml`, falls back to `config.example.yaml`, and falls back further to safe built-in defaults — the repo never crashes on a missing config file.
+
+---
+
+## Skill System
+
+Every skill lives in `skills/<name>/` and consists of two files: `SKILL.md` (the contract, read by agents before execution) and `run.py` (the implementation, which must define `run(input_str: str) -> list[str]` and return only paths under `vault/` or `data/`). Copy `skills/template/` to start a new skill.
+
+| Skill | Description |
+|-------|-------------|
+| `morning_brief` | Reads `vault/daily/` logs and writes a dated morning brief |
+| `vault_cleanup` | Promotes files with 2+ headings from `vault/raw/` to `vault/wiki/` |
+| `research_digest` | Converts a raw note into a structured digest in `vault/wiki/` |
+| `continuation_brief` | Writes a session handoff template to `vault/daily/` |
+| `policy_simulator` | Runs a JSON action manifest through `policy.py` and writes a report |
+
+See [docs/how-to-write-a-skill.md](docs/how-to-write-a-skill.md) for the full skill authoring guide.
+
+---
+
+## Roadmap
+
+| Version | Status | Scope |
+|---------|--------|-------|
+| v0.1 — Local control plane | **Done** | 5 skills, policy engine, audit log, 41+ tests |
+| v0.2 — Approval workflow | Planned | Interactive CLI approval prompt, re-run after approval |
+| v0.3 — Dashboard | Planned | Local HTML dashboard from `runs.jsonl`, skill history, policy decisions |
+| v0.4 — MCP / API integrations | Planned | External tools registered as governed skills, same policy and audit contract |
+
+---
+
 ## Repo Structure
 
 ```
