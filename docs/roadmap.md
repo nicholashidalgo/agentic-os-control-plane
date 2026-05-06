@@ -22,17 +22,24 @@
 
 ## v0.2 — Approval Workflow Execution
 
-**Status:** PLANNED
+**Status:** IN PROGRESS
 
-**Scope:** Make REQUIRE\_APPROVAL actions actionable. Today they are logged and blocked; in v0.2 the agent can prompt for approval at the CLI and re-execute after a user grants it.
+**Scope:** Make REQUIRE\_APPROVAL actions actionable. Skills that trigger a policy gate now generate a structured approval record with a full status lifecycle (pending → approved / denied / expired) instead of silently failing.
 
-**Planned:**
-- Interactive approval prompt in `run_skill.py`: when a skill's action triggers REQUIRE\_APPROVAL, pause and display the action, path, and reason to the user
-- `--approve <run_id>` CLI flag to action a previously logged pending approval
-- Update `approvals.jsonl` records with `outcome: "approved"` or `outcome: "denied"` and a timestamp
-- Time-bounded approval tokens: approvals expire after a configurable window (default 15 minutes)
+**Delivered:**
+- Structured approval records in `data/approvals.jsonl` with `approval_id` (format: `APR-YYYYMMDD-xxxxxx`), `status`, `created_at`, `expires_at`, `resolved_at`, `resolved_by`
+- `control_plane/approvals.py` — `list_approvals()`, `get_approval()`, `resolve_approval()`, `is_expired()`
+- `--approvals list [--status pending]` — inspect the approval queue
+- `--approvals approve <id>` — approve and optionally rerun the skill
+- `--approvals deny <id>` — deny a pending approval
+- `approval_timeout_hours` and `rerun_after_approval` config keys
+- 10 new tests in `tests/test_approvals.py`
 
-**Concrete deliverable:** `python control_plane/run_skill.py --skill <name>` prompts "Allow GIT\_COMMIT? [y/N]" at the terminal rather than silently logging and blocking.
+**Remaining for this milestone:**
+- Full agentic CLI wrapper (delegated to next pass)
+- Approval prompt during interactive session execution
+
+**Concrete deliverable:** `python control_plane/run_skill.py --approvals list --status pending` shows all open approvals. `--approvals approve APR-...` resolves the record and reruns the skill.
 
 ---
 

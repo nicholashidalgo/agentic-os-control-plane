@@ -12,6 +12,8 @@ _DEFAULTS: dict = {
     "default_output_folder": "vault/projects",
     "require_approval_for_destructive_actions": True,
     "allow_demo_skills": True,
+    "approval_timeout_hours": 24,
+    "rerun_after_approval": True,
 }
 
 

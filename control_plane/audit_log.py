@@ -4,7 +4,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from datetime import datetime, timezone
+import uuid
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -28,6 +29,10 @@ def _approvals_log() -> Path:
 
 def _run_id() -> str:
     return "RUN-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+
+
+def _approval_id() -> str:
+    return "APR-" + datetime.now(timezone.utc).strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:6]
 
 
 def _inputs_hash(input_str: str) -> str:
@@ -78,4 +83,36 @@ def log_approval_request(
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "outcome": "pending",
     }
+    _append(_approvals_log(), record)
+
+
+def log_approval_request_v2(
+    run_id: str,
+    skill: str,
+    action: str,
+    path: str | None,
+    reason: str,
+    timeout_hours: int = 24,
+) -> dict:
+    """Create and persist a full approval record. Returns the record dict."""
+    now = datetime.now(timezone.utc)
+    record = {
+        "approval_id": _approval_id(),
+        "run_id": run_id,
+        "skill": skill,
+        "action": action,
+        "path": path,
+        "reason": reason,
+        "status": "pending",
+        "created_at": now.isoformat(),
+        "expires_at": (now + timedelta(hours=timeout_hours)).isoformat(),
+        "resolved_at": None,
+        "resolved_by": None,
+    }
+    _append(_approvals_log(), record)
+    return record
+
+
+def append_approval_record(record: dict) -> None:
+    """Append any approval record dict to approvals.jsonl."""
     _append(_approvals_log(), record)

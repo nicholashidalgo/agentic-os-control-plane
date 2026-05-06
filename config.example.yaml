@@ -4,3 +4,5 @@ logs_path: logs
 default_output_folder: vault/projects
 require_approval_for_destructive_actions: true
 allow_demo_skills: true
+approval_timeout_hours: 24
+rerun_after_approval: true

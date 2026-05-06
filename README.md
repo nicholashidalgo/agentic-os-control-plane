@@ -63,6 +63,24 @@ chmod +x install.sh && ./install.sh
 
 `install.sh` creates the required vault and data directories, copies `config.example.yaml` to `config.yaml` on first run, and installs Python dependencies. It is safe to rerun.
 
+**Approval workflow (v0.2):** when a skill hits a `REQUIRE_APPROVAL` policy gate, execution pauses and prints an `approval_id`:
+
+```
+  approval required: APR-20260505-a3f1c9
+  action:  file_write → some/restricted/path
+  reason:  path is outside permitted write prefixes
+  expires: 2026-05-06T21:14:46+00:00
+
+  to approve:  python control_plane/run_skill.py --approvals approve APR-20260505-a3f1c9
+  to deny:     python control_plane/run_skill.py --approvals deny APR-20260505-a3f1c9
+```
+
+List pending approvals at any time:
+
+```bash
+python control_plane/run_skill.py --approvals list --status pending
+```
+
 ---
 
 ## Configuration
@@ -103,7 +121,7 @@ See [docs/how-to-write-a-skill.md](docs/how-to-write-a-skill.md) for the full sk
 | Version | Status | Scope |
 |---------|--------|-------|
 | v0.1 — Local control plane | **Done** | 5 skills, policy engine, audit log, 41+ tests |
-| v0.2 — Approval workflow | Planned | Interactive CLI approval prompt, re-run after approval |
+| v0.2 — Approval workflow | **In Progress** | Structured approval records, `--approvals` CLI, status lifecycle, rerun on approve |
 | v0.3 — Dashboard | Planned | Local HTML dashboard from `runs.jsonl`, skill history, policy decisions |
 | v0.4 — MCP / API integrations | Planned | External tools registered as governed skills, same policy and audit contract |
 

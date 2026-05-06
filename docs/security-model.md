@@ -66,6 +66,36 @@ All other write paths require approval (`REQUIRE_APPROVAL`) unless they match a 
 
 ---
 
+## Approval Lifecycle
+
+When a skill's output path or action triggers `REQUIRE_APPROVAL`, the control plane halts execution and creates a structured approval record in `data/approvals.jsonl`. The record progresses through the following states:
+
+| Status | Meaning |
+|--------|---------|
+| `pending` | Created by the control plane; awaiting human decision |
+| `approved` | Resolved by a user; skill may rerun if `rerun_after_approval: true` |
+| `denied` | Explicitly rejected; skill does not rerun |
+| `expired` | Not resolved before `expires_at`; treated as denied |
+
+**Append-only records.** No existing line in `approvals.jsonl` is ever modified. Each state transition appends a new record with the same `approval_id`. The most recent record for a given `approval_id` is the authoritative state.
+
+**Expiry.** The `expires_at` field is set to `created_at + approval_timeout_hours` (default 24 hours, configurable in `config.yaml`). `resolve_approval()` automatically downgrades an approved decision to `expired` if the deadline has passed.
+
+**Inspection and resolution via CLI:**
+
+```bash
+# List all pending approvals
+python control_plane/run_skill.py --approvals list --status pending
+
+# Approve and rerun
+python control_plane/run_skill.py --approvals approve APR-20260505-a3f1c9
+
+# Deny
+python control_plane/run_skill.py --approvals deny APR-20260505-a3f1c9
+```
+
+---
+
 ## What Is Not Protected
 
 - **Vault content is plain Markdown.** Files in `vault/` are not encrypted or access-controlled. Anyone with filesystem access can read or edit them directly.
