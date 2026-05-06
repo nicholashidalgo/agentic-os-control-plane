@@ -1,0 +1,10 @@
+[
+  {"action": "file_read",  "path": "vault/raw/sample_note.md"},
+  {"action": "file_write", "path": "vault/wiki/agent_memory.md"},
+  {"action": "file_write", "path": "vault/projects/sprint_plan.md"},
+  {"action": "file_write", "path": "control_plane/policy.py"},
+  {"action": "file_delete","path": "vault/raw/old_note.md"},
+  {"action": "git_commit"},
+  {"action": "shell_exec", "path": "scripts/deploy.sh"},
+  {"action": "launch_rocket"}
+]
