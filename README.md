@@ -1,4 +1,28 @@
-# agentic-os-control-plane
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/nicholashidalgo/ai-health-coach/main/assets/nh-logo-dark.svg" width="80">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/nicholashidalgo/ai-health-coach/main/assets/nh-logo-light.svg" width="80">
+    <img alt="Nicholas Hidalgo" src="https://raw.githubusercontent.com/nicholashidalgo/ai-health-coach/main/assets/nh-logo-light.svg" width="80">
+  </picture>
+</p>
+
+<h1 align="center">agentic-os-control-plane</h1>
+<p align="center"><b>Local-first governed execution layer for AI agents</b></p>
+
+<p align="center">
+  <a href="https://github.com/nicholashidalgo/agentic-os-control-plane"><img src="https://img.shields.io/badge/Tests-41_passing-16a34a?style=for-the-badge" alt="Tests"></a>&nbsp;
+  <a href="https://github.com/nicholashidalgo/agentic-os-control-plane"><img src="https://img.shields.io/badge/Skills-5_registered-7c3aed?style=for-the-badge" alt="Skills"></a>&nbsp;
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"></a>&nbsp;
+  <a href="https://github.com/nicholashidalgo/agentic-os-control-plane"><img src="https://img.shields.io/badge/Agents-Claude_Code_%2B_Codex-2563EB?style=for-the-badge" alt="Agents"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Claude_Code-Anthropic-D97706?style=flat" alt="Claude Code">
+  <img src="https://img.shields.io/badge/OpenAI_Codex-CLI-412991?style=flat" alt="Codex">
+  <img src="https://img.shields.io/badge/pytest-41_tests-0A9EDC?style=flat&logo=pytest&logoColor=white" alt="pytest">
+  <img src="https://img.shields.io/badge/Vault-Markdown-1abc9c?style=flat" alt="Vault">
+</p>
 
 A local-first governed execution layer for AI agents. Provides shared infrastructure for Claude Code and OpenAI Codex: a common skill contract, Markdown memory vault, policy enforcement layer, and append-only audit log.
 
@@ -195,4 +219,8 @@ Edit `control_plane/policy.py`:
 
 ## Author
 
-[Nicholas Hidalgo](https://github.com/nicholashidalgo)
+<p align="center">
+  <a href="https://linkedin.com/in/nicholashidalgo"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>&nbsp;
+  <a href="https://nicholashidalgo.com"><img src="https://img.shields.io/badge/Website-000000?style=for-the-badge&logo=About.me&logoColor=white" alt="Website"></a>&nbsp;
+  <a href="mailto:analytics@nicholashidalgo.com"><img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"></a>
+</p>
