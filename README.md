@@ -24,25 +24,146 @@
   <img src="https://img.shields.io/badge/Vault-Markdown-1abc9c?style=flat" alt="Vault">
 </p>
 
-A local-first governed execution layer for AI agents. Provides shared infrastructure for Claude Code and OpenAI Codex: a common skill contract, Markdown memory vault, policy enforcement layer, and append-only audit log.
+A working governed execution layer for AI agents. This project demonstrates how agentic AI systems can support workplace workflows while staying inside policy controls, human approval gates, output boundaries, and append-only audit logging.
+
+The current implementation runs locally and provides shared infrastructure for Claude Code and OpenAI Codex through a common skill contract, Markdown memory vault, policy enforcement layer, approval workflow, and append-only audit log.
+
+The goal is controlled automation: agents can perform useful work, but they do not operate without boundaries. Every action is evaluated, routed, logged, and constrained before it becomes part of a business workflow.
+
+---
+
+## Enterprise AI Platform Relevance
+
+This project is designed as a vendor-neutral governance pattern for workplace AI agents. It is not tied to a single model provider or agent framework.
+
+The same control-plane pattern can apply to agents built with:
+
+| Platform | How this control plane applies |
+|---|---|
+| Microsoft Foundry / Azure AI | Adds policy, approval, audit, and evaluation controls around enterprise agent workflows |
+| OpenAI Agents | Governs tool use, handoffs, SQL actions, document actions, and approval-required tasks |
+| Amazon Bedrock Agents | Adds an enterprise control layer for agent actions, knowledge-base access, and workflow execution |
+| Databricks AI/BI Genie | Supports governed natural-language analytics through approved definitions, query boundaries, and review paths |
+| Local LLM / Model Context Protocol (MCP) tooling | Enables local-first workflow automation with controlled tool access and audit logging |
+
+The model provider is not the core issue. The operating model around the agent is the issue: policy, approval, audit, evaluation, and business accountability.
+
+---
+
+## Workplace Production Relevance
+
+This project addresses the practical enterprise question behind agentic AI deployment:
+
+> How do we let AI agents help with real business work while preserving human oversight, policy compliance, auditability, and operational control?
+
+The control plane answers five production questions:
+
+1. What is the agent allowed to do?
+2. Which actions require human approval?
+3. Which actions should be denied outright?
+4. How is every action logged for review?
+5. How do we evaluate whether the agent is ready for broader use?
+
+This pattern is relevant to corporate-function workflows such as finance operations, contract intake, document review, procurement support, HR knowledge retrieval, project status follow-up, executive reporting, internal knowledge automation, analytics request routing, and data operations.
+
+---
+
+## Enterprise Controls Demonstrated
+
+| Control | What it does | Workplace relevance |
+|---|---|---|
+| Policy engine | Classifies actions as allowed, denied, or requiring approval | Prevents unmanaged agent behavior |
+| Human approval workflow | Pauses sensitive actions until a person approves or denies them | Keeps humans in control of high-risk work |
+| Skill registry | Defines approved agent capabilities | Prevents agents from using undefined or unapproved tools |
+| Skill contracts | Documents purpose, inputs, outputs, and constraints | Makes agent behavior explicit and testable |
+| Output validation | Blocks writes outside approved paths | Reduces risk of uncontrolled system changes |
+| Secret detection | Checks for credential-like patterns | Reduces exposure of sensitive information |
+| Append-only audit log | Records execution, outputs, status, and timestamps | Creates traceability for governance and review |
+| Test suite | Validates policy, registry, runtime, and simulator behavior | Supports release discipline before broader use |
+
+---
+
+## What This Proves
+
+This project demonstrates the operating discipline needed to move agentic AI from working prototype to trusted workplace system:
+
+- Agent actions should be governed before execution
+- Sensitive actions should require human approval
+- Every execution should leave an audit trail
+- Agent capabilities should be explicit, testable, and bounded
+- Evaluation and policy controls should exist before broader rollout
+- AI workflow design should account for risk, adoption, and operational trust
+- Governance should be portable across model providers and AI platforms
 
 ---
 
 ## Architecture
 
+The architecture separates agent intent from governed execution. Claude Code, OpenAI Codex, local models, or future enterprise agent platforms can request work, but actions flow through the same registry, policy, approval, and audit path before execution is considered valid.
+
 ```mermaid
 flowchart TD
-    CC[Claude Code] -->|reads| CLAUDE[CLAUDE.md]
-    CX[OpenAI Codex] -->|reads| AGENTS[AGENTS.md]
+    subgraph BUSINESS["Business Workflows"]
+        FIN["Finance / Reporting"]
+        HR["HR / Employee Support"]
+        LEGAL["Legal / Contract Review"]
+        OPS["Operations / Project Teams"]
+        MKT["Marketing / Knowledge Work"]
+    end
+
+    subgraph PLATFORMS["Enterprise AI Platforms"]
+        AZ["Microsoft Foundry / Azure AI"]
+        OAI["OpenAI Agents"]
+        AWS["Amazon Bedrock Agents"]
+        DBX["Databricks AI/BI Genie"]
+        LOCAL["Local LLM / MCP Tooling"]
+    end
+
+    BUSINESS --> PLATFORMS
+    PLATFORMS --> CP["Governed Agent Control Plane"]
+
+    CP --> REG["Skill Registry"]
+    CP --> POL{"Policy Engine"}
+
+    POL --> SKILLS["Approved Skills / Tools"]
+    POL --> APPROVALS["Human Approval Queue"]
+    POL --> DENIED["Denied Action Logged"]
+
+    SKILLS --> DATA["Approved Data / Documents / APIs"]
+    SKILLS --> AUDIT["Append-only Audit Log"]
+    APPROVALS --> AUDIT
+    DENIED --> AUDIT
+
+    AUDIT --> EVAL["Evaluation / Monitoring"]
+    EVAL --> GOV["Governance Review"]
+    GOV --> CP
+```
+
+### Policy decisions
+
+| Decision | Meaning |
+|---|---|
+| Allow | Action proceeds to approved skills and tools |
+| Require approval | Action pauses and routes to human review |
+| Deny | Action is blocked and logged |
+
+### Current local runtime
+
+The current implementation runs locally and provides shared infrastructure for Claude Code and OpenAI Codex through a common skill contract, Markdown memory vault, policy enforcement layer, approval workflow, and append-only audit log.
+
+```mermaid
+flowchart TD
+    CC[Claude Code] --> CLAUDE[CLAUDE.md]
+    CX[OpenAI Codex] --> AGENTS[AGENTS.md]
     CLAUDE --> RS[run_skill.py]
     AGENTS --> RS
 
     RS --> REG[registry.py]
-    RS --> POL{policy.py}
+    RS --> POL{"policy.py"}
 
-    POL -->|ALLOW| SK[skills/]
-    POL -->|REQUIRE APPROVAL| APR[data/approvals.jsonl]
-    POL -->|DENY| ERR[exit 1 — logged]
+    POL --> SK[skills/]
+    POL --> APR[data/approvals.jsonl]
+    POL --> ERR[exit 1 logged]
 
     SK --> VLT[vault/]
     SK --> AL[audit_log.py]
@@ -52,6 +173,7 @@ flowchart TD
 ---
 
 ## Getting Started
+
 
 See [docs/getting-started.md](docs/getting-started.md) for the full walkthrough. Three commands get you running:
 
