@@ -7,21 +7,29 @@
 </p>
 
 <h1 align="center">agentic-os-control-plane</h1>
-<p align="center"><b>Local-first governed execution layer for AI agents</b></p>
+<p align="center"><b>Governed execution layer for workplace AI agents</b></p>
 
 <p align="center">
   <a href="https://github.com/nicholashidalgo/agentic-os-control-plane"><img src="https://img.shields.io/badge/Tests-41_passing-16a34a?style=for-the-badge" alt="Tests"></a>&nbsp;
   <a href="https://github.com/nicholashidalgo/agentic-os-control-plane"><img src="https://img.shields.io/badge/Skills-5_registered-7c3aed?style=for-the-badge" alt="Skills"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"></a>&nbsp;
-  <a href="https://github.com/nicholashidalgo/agentic-os-control-plane"><img src="https://img.shields.io/badge/Agents-Claude_Code_%2B_Codex-2563EB?style=for-the-badge" alt="Agents"></a>
+  <a href="https://github.com/nicholashidalgo/agentic-os-control-plane"><img src="https://img.shields.io/badge/Governance-Policy_%2B_Approval_%2B_Audit-2563EB?style=for-the-badge" alt="Governance"></a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat&logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/Claude_Code-Anthropic-D97706?style=flat" alt="Claude Code">
-  <img src="https://img.shields.io/badge/OpenAI_Codex-CLI-412991?style=flat" alt="Codex">
   <img src="https://img.shields.io/badge/pytest-41_tests-0A9EDC?style=flat&logo=pytest&logoColor=white" alt="pytest">
-  <img src="https://img.shields.io/badge/Vault-Markdown-1abc9c?style=flat" alt="Vault">
+  <img src="https://img.shields.io/badge/Claude_Code-Anthropic-D97706?style=flat" alt="Claude Code">
+  <img src="https://img.shields.io/badge/OpenAI_Codex-CLI-412991?style=flat" alt="OpenAI Codex">
+  <img src="https://img.shields.io/badge/MCP-Tool_Governance-000000?style=flat" alt="MCP Tool Governance">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Microsoft_Foundry-Azure_AI-0078D4?style=flat&logo=microsoftazure&logoColor=white" alt="Microsoft Foundry / Azure AI">
+  <img src="https://img.shields.io/badge/OpenAI-Agents-412991?style=flat&logo=openai&logoColor=white" alt="OpenAI Agents">
+  <img src="https://img.shields.io/badge/Amazon_Bedrock-Agents-FF9900?style=flat&logo=amazonaws&logoColor=white" alt="Amazon Bedrock Agents">
+  <img src="https://img.shields.io/badge/Databricks-AI%2FBI_Genie-FF3621?style=flat&logo=databricks&logoColor=white" alt="Databricks AI/BI Genie">
+  <img src="https://img.shields.io/badge/Local_LLM-Private_Runtime-111827?style=flat" alt="Local LLM Private Runtime">
 </p>
 
 A working governed execution layer for AI agents. This project demonstrates how agentic AI systems can support workplace workflows while staying inside policy controls, human approval gates, output boundaries, and append-only audit logging.
