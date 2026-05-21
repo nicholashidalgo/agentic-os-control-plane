@@ -39,46 +39,130 @@
 ## Architecture
 
 ```text
-Operator Intent
-→ agentic-os CLI
-→ Skill Registry
-→ Policy Engine
-→ Approval Routing
-→ Controlled Execution
-→ Output Boundary Check
-→ Audit Log
-→ Operational Review
+┌──────────────────────┐
+│   Operator Intent    │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    agentic-os CLI    │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    Skill Registry    │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    Policy Engine     │
+└──────┬───────┬───────┘
+       │       │
+       │       └─────────────────────┐
+       ▼                             ▼
+┌──────────────┐              ┌──────────────┐
+│    ALLOW     │              │     DENY     │
+└──────┬───────┘              └──────┬───────┘
+       │                             │
+       ▼                             ▼
+┌──────────────┐              ┌──────────────┐
+│  Controlled  │              │   Blocked    │
+│  Execution   │              │   Action     │
+└──────┬───────┘              └──────────────┘
+       │
+       ▼
+┌──────────────────────┐
+│ REQUIRE_APPROVAL     │
+│ Approval Ledger      │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Output Boundary Check│
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Append-only Audit Log│
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Operational Review   │
+└──────────────────────┘
 ```
 
+## Governance Controls
+
+| Control | Artifact | Governance Purpose |
+| --- | --- | --- |
+| Policy engine | [`src/agentic_os/control_plane/policy.py`](src/agentic_os/control_plane/policy.py) | Classifies actions before execution |
+| Approval routing | [`src/agentic_os/control_plane/approvals.py`](src/agentic_os/control_plane/approvals.py) | Routes high-risk actions through durable approval records |
+| Audit logging | [`src/agentic_os/control_plane/audit_log.py`](src/agentic_os/control_plane/audit_log.py) | Records execution and approval events |
+| Output boundaries | [`src/agentic_os/control_plane/runner.py`](src/agentic_os/control_plane/runner.py) | Restricts writes to governed paths |
+| Skill registry | [`src/agentic_os/control_plane/registry.py`](src/agentic_os/control_plane/registry.py) | Keeps executable capabilities inspectable |
+| CLI surface | [`src/agentic_os/cli.py`](src/agentic_os/cli.py) | Provides the supported operator interface |
+
+## Pipeline Components
+
 <p>
-  <img src="https://img.shields.io/badge/Intake-CLI-111827?style=flat-square" alt="Intake CLI">
-  <img src="https://img.shields.io/badge/Policy-allow_approval_deny-2563eb?style=flat-square" alt="Policy allow approval deny">
-  <img src="https://img.shields.io/badge/Approve-ledger-f59e0b?style=flat-square" alt="Approve ledger">
-  <img src="https://img.shields.io/badge/Execute-skills-16a34a?style=flat-square" alt="Execute skills">
-  <img src="https://img.shields.io/badge/Audit-JSONL-7c3aed?style=flat-square" alt="Audit JSONL">
-  <img src="https://img.shields.io/badge/Govern-bounded_writes-dc2626?style=flat-square" alt="Govern bounded writes">
+  <img src="https://img.shields.io/badge/Intake-CLI-3776AB?style=flat-square" alt="Intake CLI">
+  <img src="https://img.shields.io/badge/Policy-ALLOW_APPROVAL_DENY-b45309?style=flat-square" alt="Policy ALLOW APPROVAL DENY">
+  <img src="https://img.shields.io/badge/Approve-JSONL_LEDGER-d29922?style=flat-square" alt="Approve JSONL LEDGER">
+  <img src="https://img.shields.io/badge/Execute-SKILLS-3fb950?style=flat-square" alt="Execute SKILLS">
+  <img src="https://img.shields.io/badge/Audit-RUNS_JSONL-7c3aed?style=flat-square" alt="Audit RUNS JSONL">
+  <img src="https://img.shields.io/badge/Govern-BOUNDED_WRITES-f85149?style=flat-square" alt="Govern BOUNDED WRITES">
 </p>
 
-## Control Surface
+## Runtime Surface
 
-| Component | Artifact | Purpose |
-| --- | --- | --- |
-| CLI surface | [`src/agentic_os/cli.py`](src/agentic_os/cli.py) | Packaged Typer entrypoint for listing, running, and approving workflows |
-| Policy engine | [`src/agentic_os/control_plane/policy.py`](src/agentic_os/control_plane/policy.py) | Classifies actions before execution |
-| Approval ledger | [`data/approvals.jsonl`](data/approvals.jsonl) | Tracks pending, approved, denied, and expired approvals |
-| Audit log | [`data/runs.jsonl`](data/runs.jsonl) | Records workflow execution outcomes |
-| Skill registry | [`src/agentic_os/control_plane/registry.py`](src/agentic_os/control_plane/registry.py) | Defines the bounded executable skill surface |
-| Runner | [`src/agentic_os/control_plane/runner.py`](src/agentic_os/control_plane/runner.py) | Executes approved skills and validates output paths |
+The maintained runtime surface is the packaged implementation under [`src/agentic_os/`](src/agentic_os/). The supported operator interface is the package and CLI, rather than ad hoc wrapper commands.
+
+The packaged surface provides the control points that matter for governed operation:
+
+- skill discovery through the CLI
+- routed execution through the runner
+- policy classification before write acceptance
+- approval handling through the local approval ledger
+- bounded path validation before outputs are accepted
+
+Supported command examples:
+
+```bash
+agentic-os list
+agentic-os run morning_brief
+agentic-os approvals list --status pending
+agentic-os approvals approve <approval_id>
+```
+
+## Skill Surface
+
+| Skill | Purpose |
+| --- | --- |
+| `morning_brief` | Creates a dated briefing from recent daily artifacts |
+| `vault_cleanup` | Promotes structured raw notes into curated reference material |
+| `research_digest` | Converts an input note into a structured digest in the wiki tier |
+| `continuation_brief` | Creates a handoff document for the next working session |
+| `policy_simulator` | Evaluates proposed actions against active policy without executing them |
 
 ## Quick Start
 
 ```bash
+# 1. Clone
 git clone https://github.com/nicholashidalgo/agentic-os-control-plane.git
 cd agentic-os-control-plane
+
+# 2. Install
 chmod +x install.sh
 ./install.sh
+
+# 3. List registered skills
 agentic-os list
+
+# 4. Run a governed skill
 agentic-os run morning_brief
+
+# 5. Inspect pending approvals
 agentic-os approvals list --status pending
 ```
 
@@ -90,7 +174,8 @@ agentic-os approvals list --status pending
 | CLI | Typer |
 | Configuration | YAML |
 | Tests | pytest, 59 tests |
-| Deployment preview | Cloudflare Pages landing page |
+| Landing page | Cloudflare Pages |
+| Audit storage | Local JSONL artifacts |
 
 ## Tests
 
@@ -103,15 +188,19 @@ python -m pytest -q
 ## Project Structure
 
 ```text
-src/agentic_os/
-skills/
-docs/
-landing/
-tests/
-data/
-vault/
-README.md
-pyproject.toml
+agentic-os-control-plane/
+├── src/agentic_os/
+│   ├── cli.py
+│   └── control_plane/
+├── skills/
+├── docs/
+├── landing/
+├── tests/
+├── data/
+├── vault/
+├── install.sh
+├── pyproject.toml
+└── README.md
 ```
 
 ## Known Limitations
