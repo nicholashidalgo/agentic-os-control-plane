@@ -1,11 +1,9 @@
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(_REPO_ROOT))
 
 
 def _run_skill(tmp_path, entries: list[dict]) -> str:
@@ -82,7 +80,7 @@ def test_sample_manifest_covers_all_decisions():
     assert "file_write" in actions
     assert "git_commit" in actions or "git_push" in actions or "shell_exec" in actions
 
-    from control_plane.policy import ActionType, PolicyDecision, check_action
+    from agentic_os.control_plane.policy import ActionType, PolicyDecision, check_action
     action_map = {
         "file_read": ActionType.FILE_READ,
         "file_write": ActionType.FILE_WRITE,

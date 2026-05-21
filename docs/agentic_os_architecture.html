@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AgenticOS — Architecture Final</title>
+<title>AgenticOS - Architecture Final</title>
 <style>
   /* ── Design tokens from File A ── */
   :root {
@@ -35,7 +35,7 @@
     color: var(--chalk);
   }
 
-  /* ── Outer wood-grain frame — File A exact ── */
+  /* -- Outer wood-grain frame, File A exact -- */
   .frame {
     width: min(1280px, 97vw);
     aspect-ratio: 16 / 9;
@@ -48,7 +48,7 @@
       inset 0 0 0 6px rgba(65,36,16,.45);
   }
 
-  /* ── Chalkboard surface — File A exact ── */
+  /* -- Chalkboard surface, File A exact -- */
   .board {
     position: relative;
     height: 100%;
@@ -62,7 +62,7 @@
     box-shadow: inset 0 0 40px rgba(0,0,0,.45);
   }
 
-  /* Grid texture — File A exact */
+  /* Grid texture, File A exact */
   .board::before {
     content: "";
     position: absolute;
@@ -76,7 +76,7 @@
     pointer-events: none;
   }
 
-  /* Chalk dust — File A exact */
+  /* Chalk dust, File A exact */
   .dust {
     position: absolute;
     inset: 0;
@@ -94,7 +94,7 @@
     to   { transform: translateY(-6px); opacity: .68; }
   }
 
-  /* ── Title — File A typography ── */
+  /* -- Title, File A typography -- */
   .title {
     position: absolute;
     top: 24px;
@@ -132,7 +132,7 @@
     transform: translateX(-50%);
   }
 
-  /* ── Nodes — File A exact style ── */
+  /* -- Nodes, File A exact style -- */
   .node {
     position: absolute;
     min-width: 154px;
@@ -169,7 +169,7 @@
     to   { opacity: 1; clip-path: inset(0 0 0 0); }
   }
 
-  /* ── 10 node positions — organic layout, 1.8s sequential delays ──
+  /* -- 10 node positions, organic layout, 1.8s sequential delays --
 
      System: 1100×490. Approx node heights at 10px padding + text:
        1-line desc: ~52px.  2-line desc: ~64px.  3-line desc: ~76px.
@@ -183,7 +183,7 @@
        R6  Vault / Continuation:top=430  (h≈64, bottom≈494)  ← within 490
   */
 
-  /* R1 — User Intent, centred */
+  /* R1 - User Intent, centred */
   .n-user {
     left: 50%; transform: translateX(-50%);
     top: 0;
@@ -192,7 +192,7 @@
     animation-delay: .2s;
   }
 
-  /* R2 — Orchestrator, centred, wide */
+  /* R2 - Orchestrator, centred, wide */
   .n-orch {
     left: 50%; transform: translateX(-50%);
     top: 82px;
@@ -201,7 +201,7 @@
     animation-delay: 2.0s;
   }
 
-  /* R3 left — RAG Knowledge */
+  /* R3 left - RAG Knowledge */
   .n-rag {
     left: 18px;
     top: 172px;
@@ -210,7 +210,7 @@
     animation-delay: 3.8s;
   }
 
-  /* R3 centre — LLM Brain */
+  /* R3 centre - LLM Brain */
   .n-llm {
     left: 50%; transform: translateX(-50%);
     top: 172px;
@@ -219,7 +219,7 @@
     animation-delay: 5.6s;
   }
 
-  /* R3 right — Skill Registry */
+  /* R3 right - Skill Registry */
   .n-skillreg {
     right: 18px;
     top: 172px;
@@ -228,7 +228,7 @@
     animation-delay: 7.4s;
   }
 
-  /* R4 — Agents = Hands, centred */
+  /* R4 - Agents = Hands, centred */
   .n-agents {
     left: 50%; transform: translateX(-50%);
     top: 272px;
@@ -237,7 +237,7 @@
     animation-delay: 9.2s;
   }
 
-  /* R5 left — Policy Engine */
+  /* R5 left - Policy Engine */
   .n-policy {
     left: 165px;
     top: 358px;
@@ -252,7 +252,7 @@
     50%      { box-shadow: 0 0 18px var(--red), 0 0 32px rgba(240,111,100,.45), 0 0 0 2px rgba(255,255,255,.05); }
   }
 
-  /* R5 right — Audit Trail */
+  /* R5 right - Audit Trail */
   .n-audit {
     right: 165px;
     top: 358px;
@@ -261,7 +261,7 @@
     animation-delay: 12.8s;
   }
 
-  /* R6 left — Memory Vault */
+  /* R6 left - Memory Vault */
   .n-vault {
     left: 100px;
     top: 430px;
@@ -270,7 +270,7 @@
     animation-delay: 14.6s;
   }
 
-  /* R6 right — Continuation Brief */
+  /* R6 right - Continuation Brief */
   .n-continuation {
     right: 100px;
     top: 430px;
@@ -279,7 +279,7 @@
     animation-delay: 16.4s;
   }
 
-  /* ── LLM shimmer — thinking effect ── */
+  /* -- LLM shimmer, thinking effect -- */
   .n-llm::after {
     content: "";
     position: absolute;
@@ -335,9 +335,9 @@
     to   { opacity: 1; }
   }
 
-  /* Arrow animation delays — appear just after source node is visible.
+  /* Arrow animation delays, appear just after source node is visible.
      Node appears at delay + 1.2s (writeIn duration).
-     fa = "flow after" — fires 0.3s after source node finishes.
+     fa = "flow after", fires 0.3s after source node finishes.
        fa1  after user     (0.2+1.2+0.3 = 1.7s)
        fa2  after orch     (2.0+1.2+0.3 = 3.5s)
        fa3  after llm→rag  (5.6+1.2+0.3 = 7.1s)
@@ -391,7 +391,7 @@
     100% { opacity:0; transform:translate(546px, 22px);  }
   }
 
-  /* ── Scrolling marquee — clean separation from legend ── */
+  /* -- Scrolling marquee, clean separation from legend -- */
   .marquee-wrap {
     position: absolute;
     left: 0;
@@ -422,7 +422,7 @@
     to   { transform: translateX(-50%); }
   }
 
-  /* ── Legend strip — File A exact layout ── */
+  /* -- Legend strip, File A exact layout -- */
   .legend {
     position: absolute;
     left: 0;
@@ -461,12 +461,12 @@
   <section class="board">
     <div class="dust"></div>
 
-    <!-- ── Title — File A typography ── -->
+    <!-- -- Title, File A typography -- -->
     <div class="title"><span class="accent">AgenticOS</span>: How It Actually Runs</div>
     <div class="subtitle">A governed execution layer.&ensp;Real components.&ensp;Real policy.&ensp;Real audit trail.</div>
 
     <!-- ══════════════════════════════════════════════════════
-         SYSTEM — 1100×490, centred, top:100px within board
+         SYSTEM - 1100×490, centred, top:100px within board
 
          Node centre coordinates for SVG paths (cx, cy):
            user:         cx=550, top=0,   h≈52  → cy=26,  bot=52
@@ -653,7 +653,7 @@
       <!-- 2. Orchestrator / Agent Loop -->
       <div class="node n-orch">
         <span class="label">Orchestrator / Agent Loop</span>
-        <span class="desc">Plan → Act → Observe → Reflect → Repeat<br>Claude Code · OpenAI Codex</span>
+        <span class="desc">Plan → Act → Observe → Reflect → Repeat<br>Operator runtime surfaces</span>
       </div>
 
       <!-- 3. RAG Knowledge -->
@@ -665,7 +665,7 @@
       <!-- 4. LLM Brain -->
       <div class="node n-llm">
         <span class="label">LLM Brain</span>
-        <span class="desc">Claude · Codex · Gemma · Ollama<br>reasoning · planning · tool selection</span>
+        <span class="desc">Local and remote runtimes<br>reasoning · planning · tool selection</span>
       </div>
 
       <!-- 5. Skill Registry -->
@@ -706,7 +706,7 @@
 
     </div><!-- /system -->
 
-    <!-- ── Scrolling marquee — above legend, no overlap ── -->
+    <!-- -- Scrolling marquee, above legend, no overlap -- -->
     <div class="marquee-wrap" aria-hidden="true">
       <div class="marquee-inner">
         <!-- duplicated for seamless infinite scroll -->
@@ -715,9 +715,9 @@
       </div>
     </div>
 
-    <!-- ── Legend strip — File A layout, File B content ── -->
+    <!-- -- Legend strip, File A layout, File B content -- -->
     <div class="legend">
-      <div class="legend-col"><b>Brain</b><span>Claude Code / Codex</span></div>
+      <div class="legend-col"><b>Brain</b><span>Operator runtime</span></div>
       <div class="legend-col"><b>Knowledge</b><span>vault/wiki/</span></div>
       <div class="legend-col"><b>Skills</b><span>5 registered skills</span></div>
       <div class="legend-col"><b>Policy</b><span>policy.py</span></div>

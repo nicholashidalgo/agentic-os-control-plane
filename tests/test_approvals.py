@@ -1,15 +1,13 @@
 import json
-import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(_REPO_ROOT))
 
-from control_plane.audit_log import log_approval_request_v2
-from control_plane.approvals import (
+from agentic_os.control_plane.audit_log import log_approval_request_v2
+from agentic_os.control_plane.approvals import (
     get_approval,
     is_expired,
     list_approvals,
@@ -22,8 +20,8 @@ from control_plane.approvals import (
 @pytest.fixture()
 def fake_approvals_log(tmp_path, monkeypatch):
     """Redirect approvals log to a temp file and return its path."""
-    import control_plane.audit_log as al
-    import control_plane.approvals as ap
+    import agentic_os.control_plane.audit_log as al
+    import agentic_os.control_plane.approvals as ap
 
     log_file = tmp_path / "approvals.jsonl"
     monkeypatch.setattr(al, "_approvals_log", lambda: log_file)

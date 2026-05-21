@@ -1,6 +1,6 @@
 # Skill: <your-skill-name>
 
-> This file is read by Claude Code and OpenAI Codex before execution.
+> This file is read before execution and defines the governed contract for the skill.
 > Fill in every section. Keep descriptions concrete and accurate.
 
 ## Purpose

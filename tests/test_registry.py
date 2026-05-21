@@ -1,5 +1,5 @@
 import pytest
-from control_plane.registry import get_skill, list_skills, SKILL_REGISTRY
+from agentic_os.control_plane.registry import SKILL_REGISTRY, get_skill, list_skills
 
 
 def test_all_skills_present():

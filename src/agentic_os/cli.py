@@ -10,7 +10,7 @@ from agentic_os.control_plane.registry import list_skills
 
 app = typer.Typer(
     name="agentic-os",
-    help="Governed execution layer for workplace AI agents.",
+    help="Governed execution layer for workflow automation.",
     no_args_is_help=True,
     add_completion=False,
 )
