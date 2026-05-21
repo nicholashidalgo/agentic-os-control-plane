@@ -5,12 +5,12 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parent.parent
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 
 def _data_path() -> Path:
     try:
-        from control_plane.config import get_config
+        from agentic_os.control_plane.config import get_config
         return _REPO_ROOT / get_config().get("data_path", "data")
     except Exception:
         return _REPO_ROOT / "data"
@@ -109,6 +109,6 @@ def resolve_approval(
         "resolved_by": resolved_by,
     }
 
-    from control_plane.audit_log import append_approval_record
+    from agentic_os.control_plane.audit_log import append_approval_record
     append_approval_record(resolved)
     return resolved
