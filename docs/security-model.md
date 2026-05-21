@@ -2,13 +2,13 @@
 
 ## Design Principles
 
-**Local-first.** No network calls in production code. All data — vault content, audit logs, manifests — lives on the local filesystem. There is no external service to compromise or misconfigure.
+**Local-first.** No network calls in production code. All data, vault content, audit logs, and manifests, lives on the local filesystem. There is no external service to compromise or misconfigure.
 
 **Least privilege by path.** Skills may only write to `vault/` and `data/`. Every other path requires explicit approval or is blocked unconditionally. The control plane validates output paths after execution, before logging, and rejects any path that escapes the permitted prefixes.
 
 **Approval gates for consequential actions.** Actions that are hard to reverse or that affect shared state (git commits, pushes, email, external API writes, arbitrary shell execution, file deletion) are categorised as REQUIRE\_APPROVAL. In v0.1 this means the run is logged with the action flagged; interactive approval flow is planned for v0.2.
 
-**Heuristic secret blocking.** Content is scanned for common credential patterns before being written to the audit log. This prevents accidental credential leakage into `runs.jsonl`. The scanner is a heuristic — see the Secret Detection section for its scope and known limitations.
+**Heuristic secret blocking.** Content is scanned for common credential patterns before being written to the audit log. This prevents accidental credential leakage into `runs.jsonl`. The scanner is a heuristic, see the Secret Detection section for its scope and known limitations.
 
 **No implicit trust.** Skills are not trusted to self-report what they write. The control plane independently validates every output path returned by a skill against the permitted prefixes. A skill claiming to write to `vault/wiki/note.md` but returning `../../etc/cron.d/evil` will be rejected before any write occurs.
 
@@ -18,8 +18,8 @@
 
 | Path prefix | Rationale |
 |-------------|-----------|
-| `vault/` | Agent memory store — all tiers (raw, wiki, projects, daily) |
-| `data/` | Structured audit data — runs.jsonl, approvals.jsonl |
+| `vault/` | Agent memory store, all tiers (raw, wiki, projects, daily) |
+| `data/` | Structured audit data, runs.jsonl and approvals.jsonl |
 
 All other write paths require approval (`REQUIRE_APPROVAL`) unless they match a blocked prefix, in which case they are unconditionally denied.
 
@@ -29,9 +29,9 @@ All other write paths require approval (`REQUIRE_APPROVAL`) unless they match a 
 
 | Path | Rationale |
 |------|-----------|
-| `control_plane/` | Core runtime — must not be modified by agents |
-| `CLAUDE.md` | Agent instruction file — authoritative, agent-immutable |
-| `AGENTS.md` | Agent instruction file — authoritative, agent-immutable |
+| `control_plane/` | Core runtime, must not be modified by agents |
+| `CLAUDE.md` | Agent instruction file, authoritative and agent-immutable |
+| `AGENTS.md` | Agent instruction file, authoritative and agent-immutable |
 
 ---
 
@@ -58,11 +58,11 @@ All other write paths require approval (`REQUIRE_APPROVAL`) unless they match a 
 | Pattern | Examples matched |
 |---------|-----------------|
 | Assignment with credential keyword | `api_key=abc123xyz`, `password: hunter2abc`, `token=ghp_...`, `secret=...`, `credential=...` |
-| OpenAI-style secret key | `sk-` followed by 20+ alphanumeric characters |
+| Vendor-style secret key | `sk-` followed by 20+ alphanumeric characters |
 | GitHub personal access token | `ghp_` followed by exactly 36 alphanumeric characters |
 | HTTP Bearer token | `Bearer ` followed by 20+ token characters |
 
-**Known false positives:** The keyword pattern matches `api_key`, `api-key`, `secret`, `token`, `password`, `passwd`, and `credential` as substrings before an `=` or `:`. A line like `credential=my_long_username` (not a secret) will trigger a DENY. This is acceptable in v0.1 — false positives cause a log entry to be withheld, not a skill to fail.
+**Known false positives:** The keyword pattern matches `api_key`, `api-key`, `secret`, `token`, `password`, `passwd`, and `credential` as substrings before an `=` or `:`. A line like `credential=my_long_username` (not a secret) will trigger a DENY. This is acceptable in v0.1, false positives cause a log entry to be withheld, not a skill to fail.
 
 ---
 
@@ -85,13 +85,13 @@ When a skill's output path or action triggers `REQUIRE_APPROVAL`, the control pl
 
 ```bash
 # List all pending approvals
-python control_plane/run_skill.py --approvals list --status pending
+agentic-os approvals list --status pending
 
 # Approve and rerun
-python control_plane/run_skill.py --approvals approve APR-20260505-a3f1c9
+agentic-os approvals approve APR-20260505-a3f1c9
 
 # Deny
-python control_plane/run_skill.py --approvals deny APR-20260505-a3f1c9
+agentic-os approvals deny APR-20260505-a3f1c9
 ```
 
 ---

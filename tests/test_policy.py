@@ -1,5 +1,5 @@
 import pytest
-from control_plane.policy import (
+from agentic_os.control_plane.policy import (
     ActionType,
     PolicyDecision,
     check_action,

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — first-time setup for agentic-os-control-plane
+# install.sh - first-time setup for agentic-os-control-plane
 # Safe to rerun: creates missing dirs, never overwrites existing config.yaml
 set -euo pipefail
 
@@ -27,21 +27,22 @@ for d in "${DIRS[@]}"; do
   fi
 done
 
-# 2. Copy config.example.yaml → config.yaml (only if config.yaml is absent)
+# 2. Copy config.example.yaml to config.yaml (only if config.yaml is absent)
 if [ ! -f "$REPO_ROOT/config.yaml" ]; then
   cp "$REPO_ROOT/config.example.yaml" "$REPO_ROOT/config.yaml"
   echo ""
   echo "    created  config.yaml (copied from config.example.yaml)"
 else
   echo ""
-  echo "    exists   config.yaml — not overwritten"
+  echo "    exists   config.yaml, not overwritten"
 fi
 
 # 3. Install Python dependencies
 if [ -f "$REPO_ROOT/requirements.txt" ]; then
   echo ""
   echo "==> Installing Python dependencies..."
-  pip install -r "$REPO_ROOT/requirements.txt" --quiet
+  python -m pip install -r "$REPO_ROOT/requirements.txt" --quiet
+  python -m pip install -e "$REPO_ROOT" --quiet
   echo "    done"
 fi
 
@@ -52,9 +53,10 @@ echo ""
 echo "Next steps:"
 echo "  1. Edit config.yaml to set your vault path (default: vault/)"
 echo "  2. Run a demo skill:"
-echo "       python control_plane/run_skill.py --skill morning_brief"
-echo "       python control_plane/run_skill.py --skill vault_cleanup"
-echo "       python control_plane/run_skill.py --skill research_digest --input vault/raw/sample_note.md"
+echo "       agentic-os list"
+echo "       agentic-os run morning_brief"
+echo "       agentic-os run research_digest --input vault/raw/sample_note.md"
+echo "       agentic-os run policy_simulator --input vault/raw/sample_action_manifest.json"
 echo "  3. Run tests:"
 echo "       python -m pytest tests/ -v"
 echo ""

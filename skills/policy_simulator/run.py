@@ -8,7 +8,7 @@ from pathlib import Path
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 _PROJECTS = _REPO_ROOT / "vault" / "projects"
 
-from control_plane.policy import ActionType, PolicyDecision, PolicyResult, check_action
+from agentic_os.control_plane.policy import ActionType, PolicyDecision, PolicyResult, check_action
 
 _ACTION_MAP: dict[str, ActionType] = {
     "file_read": ActionType.FILE_READ,
